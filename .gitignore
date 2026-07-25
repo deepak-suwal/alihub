@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.next/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+coverage/
+.turbo/
+pnpm-lock.yaml.bak
+prisma/migrations/**/migration_lock.toml.bak
+
+# Vercel
+.vercel

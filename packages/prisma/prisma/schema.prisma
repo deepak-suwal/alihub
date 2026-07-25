@@ -1,0 +1,542 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+// =========================================================================
+// Identity
+// =========================================================================
+
+model User {
+  id             String        @id @default(cuid())
+  email          String?       @unique
+  phone          String?       @unique
+  passwordHash   String        @map("password_hash")
+  role           Role          @default(CUSTOMER)
+  businessName   String?       @map("business_name")
+  kycStatus      KycStatus     @default(NONE) @map("kyc_status")
+  kycDocumentKey String?       @map("kyc_document_key") // S3 key, private bucket
+  isActive       Boolean       @default(true) @map("is_active")
+
+  refreshTokens  RefreshToken[]
+  addresses      Address[]
+  orders         Order[]
+  auditLogs      AuditLog[]
+
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String   @unique @map("token_hash")
+  deviceId    String   @map("device_id")
+  userAgent   String?  @map("user_agent")
+  ip          String?
+  revoked     Boolean  @default(false)
+  replacedBy  String?  @map("replaced_by")
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Address {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label         String   @default("Home")
+  recipientName String   @map("recipient_name")
+  phone         String
+  line1         String
+  line2         String?
+  city          String
+  district      String
+  province      String
+  isDefault     Boolean  @default(false) @map("is_default")
+  orders        Order[]
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("addresses")
+}
+
+// =========================================================================
+// Catalog (owned by the Alibaba Integration Service)
+// =========================================================================
+
+model Supplier {
+  id           String    @id @default(cuid())
+  alibabaId    String    @unique @map("alibaba_supplier_id")
+  companyName  String    @map("company_name")
+  country      String
+  goldSupplier Boolean   @default(false) @map("gold_supplier")
+  responseRate Decimal?  @db.Decimal(5, 2) @map("response_rate")
+  rating       Decimal?  @db.Decimal(3, 2)
+  raw          Json?
+  products     Product[]
+  marginRules  MarginRule[]
+  supplierPayouts SupplierPayout[]
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("suppliers")
+}
+
+model Category {
+  id           String     @id @default(cuid())
+  alibabaId    String     @unique @map("alibaba_category_id")
+  parentId     String?    @map("parent_id")
+  parent       Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children     Category[] @relation("CategoryTree")
+  nameEn       String     @map("name_en")
+  nameLocal    String?    @map("name_local")
+  products     Product[]
+  marginRules  MarginRule[]
+  promotions   Promotion[]
+
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("categories")
+}
+
+model Product {
+  id           String           @id @default(cuid())
+  alibabaId    String           @unique @map("alibaba_product_id")
+  supplierId   String           @map("supplier_id")
+  supplier     Supplier         @relation(fields: [supplierId], references: [id])
+  categoryId   String           @map("category_id")
+  category     Category         @relation(fields: [categoryId], references: [id])
+  title        String
+  slug         String           @unique
+  description  String
+  minOrderQty  Int              @map("min_order_qty")
+  priceUsdMin  Decimal          @db.Decimal(12, 4) @map("price_usd_min")
+  priceUsdMax  Decimal          @db.Decimal(12, 4) @map("price_usd_max")
+  attributes   Json?
+  status       ProductStatus    @default(ACTIVE)
+  lastSyncedAt DateTime         @map("last_synced_at")
+  syncVersion  Int              @default(0) @map("sync_version")
+
+  // Admin manual override (§8 Catalog: "Manual price override") — when set
+  // and not expired, PricingService returns this instead of computing from
+  // the formula. Nullable pair so "no override" is unambiguous.
+  overridePriceNpr    Decimal?  @db.Decimal(14, 2) @map("override_price_npr")
+  overridePriceExpiresAt DateTime? @map("override_price_expires_at")
+
+  images       ProductImage[]
+  variants     ProductVariant[]
+  pricingTiers PricingTier[]
+  orderItems   OrderItem[]
+
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  @@index([categoryId, status])
+  @@index([supplierId])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  s3Key     String  @map("s3_key")
+  cdnUrl    String  @map("cdn_url")
+  position  Int     @default(0)
+  isPrimary Boolean @default(false) @map("is_primary")
+
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id             String      @id @default(cuid())
+  productId      String      @map("product_id")
+  product        Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  alibabaSkuId   String      @map("alibaba_sku_id")
+  attributesJson Json        @map("attributes_json")
+  priceUsd       Decimal     @db.Decimal(12, 4) @map("price_usd")
+  stockQty       Int?        @map("stock_qty")
+  orderItems     OrderItem[]
+
+  @@unique([productId, alibabaSkuId])
+  @@map("product_variants")
+}
+
+/// OAuth tokens from the Alibaba Open Platform (Auth Management / code
+/// exchange). One row per authorized Alibaba account; the newest
+/// non-expired row is used by sync jobs.
+model AlibabaToken {
+  id               String    @id @default(cuid())
+  accountId        String?   @map("account_id")
+  accessToken      String    @map("access_token")
+  refreshToken     String?   @map("refresh_token")
+  expiresAt        DateTime  @map("expires_at")
+  refreshExpiresAt DateTime? @map("refresh_expires_at")
+  raw              Json?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@map("alibaba_tokens")
+}
+
+model SyncJob {
+  id         String    @id @default(cuid())
+  type       SyncType
+  targetId   String?   @map("target_id")
+  status     JobStatus @default(PENDING)
+  attempts   Int       @default(0)
+  lastError  String?   @map("last_error")
+  startedAt  DateTime? @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([status, type])
+  @@map("sync_jobs")
+}
+
+// =========================================================================
+// Pricing
+// =========================================================================
+
+model FxRate {
+  id          String   @id @default(cuid())
+  base        String   @default("USD")
+  quote       String   @default("NPR")
+  rate        Decimal  @db.Decimal(10, 4)
+  source      String   // "NRB" | "MANUAL" | "PROVIDER_X"
+  effectiveAt DateTime @map("effective_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([base, quote, effectiveAt])
+  @@map("fx_rates")
+}
+
+model MarginRule {
+  id          String      @id @default(cuid())
+  scope       MarginScope
+  categoryId  String?     @map("category_id")
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  supplierId  String?     @map("supplier_id")
+  supplier    Supplier?   @relation(fields: [supplierId], references: [id])
+  ratePercent Decimal     @db.Decimal(5, 2) @map("rate_percent")
+  priority    Int         @default(0)
+  activeFrom  DateTime    @map("active_from")
+  activeTo    DateTime?   @map("active_to")
+
+  @@map("margin_rules")
+}
+
+model PricingTier {
+  id          String  @id @default(cuid())
+  productId   String  @map("product_id")
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  minQty      Int     @map("min_qty")
+  marginDelta Decimal @db.Decimal(5, 2) @map("margin_delta")
+
+  @@map("pricing_tiers")
+}
+
+model Promotion {
+  id          String    @id @default(cuid())
+  code        String?   @unique
+  type        PromoType
+  value       Decimal   @db.Decimal(10, 2)
+  categoryId  String?   @map("category_id")
+  category    Category? @relation(fields: [categoryId], references: [id])
+  minOrderNpr Decimal?  @db.Decimal(14, 2) @map("min_order_npr")
+  startsAt    DateTime  @map("starts_at")
+  endsAt      DateTime  @map("ends_at")
+
+  @@map("promotions")
+}
+
+// =========================================================================
+// Orders, payments & settlement ledger
+// =========================================================================
+
+model Order {
+  id              String           @id @default(cuid())
+  orderNo         String           @unique @map("order_no")
+  userId          String           @map("user_id")
+  user            User             @relation(fields: [userId], references: [id])
+  addressId       String?          @map("address_id")
+  address         Address?         @relation(fields: [addressId], references: [id])
+  status          OrderStatus      @default(CART)
+  currency        String           @default("NPR")
+  subtotalNpr     Decimal          @db.Decimal(14, 2) @map("subtotal_npr")
+  shippingNpr     Decimal          @db.Decimal(14, 2) @default(0) @map("shipping_npr")
+  customsNpr      Decimal          @db.Decimal(14, 2) @default(0) @map("customs_npr")
+  vatNpr          Decimal          @db.Decimal(14, 2) @default(0) @map("vat_npr")
+  totalNpr        Decimal          @db.Decimal(14, 2) @map("total_npr")
+  paymentIntentId String           @unique @map("payment_intent_id")
+
+  items           OrderItem[]
+  payments        Payment[]
+  commissions     Commission[]
+  supplierPayouts SupplierPayout[]
+  refunds         Refund[]
+
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id            String          @id @default(cuid())
+  orderId       String          @map("order_id")
+  order         Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId     String          @map("product_id")
+  product       Product         @relation(fields: [productId], references: [id])
+  variantId     String?         @map("variant_id")
+  variant       ProductVariant? @relation(fields: [variantId], references: [id])
+  titleSnapshot String          @map("title_snapshot")
+  qty           Int
+  unitPriceNpr  Decimal         @db.Decimal(14, 2) @map("unit_price_npr")
+  lineTotalNpr  Decimal         @db.Decimal(14, 2) @map("line_total_npr")
+
+  @@map("order_items")
+}
+
+model Payment {
+  id            String           @id @default(cuid())
+  orderId       String           @map("order_id")
+  order         Order            @relation(fields: [orderId], references: [id])
+  provider      String           // CONNECTIPS | FONEPAY
+  providerTxnId String?          @unique @map("provider_txn_id")
+  amountNpr     Decimal          @db.Decimal(14, 2) @map("amount_npr")
+  status        PaymentStatus    @default(INITIATED)
+  attempts      PaymentAttempt[]
+  refunds       Refund[]
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  @@map("payments")
+}
+
+model PaymentAttempt {
+  id             String        @id @default(cuid())
+  paymentId      String        @map("payment_id")
+  payment        Payment       @relation(fields: [paymentId], references: [id])
+  idempotencyKey String        @unique @map("idempotency_key")
+  status         PaymentStatus
+  rawRequest     Json          @map("raw_request")
+  rawCallback    Json?         @map("raw_callback")
+  signatureValid Boolean?      @map("signature_valid")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  @@map("payment_attempts")
+}
+
+model Settlement {
+  id             String           @id @default(cuid())
+  provider       String
+  settlementDate DateTime         @map("settlement_date")
+  reportFileKey  String           @map("report_file_key")
+  totalAmountNpr Decimal          @db.Decimal(14, 2) @map("total_amount_npr")
+  matchedCount   Int              @default(0) @map("matched_count")
+  unmatchedCount Int              @default(0) @map("unmatched_count")
+  status         SettlementStatus @default(PROCESSING)
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  @@map("settlements")
+}
+
+model Commission {
+  id          String   @id @default(cuid())
+  orderId     String   @map("order_id")
+  order       Order    @relation(fields: [orderId], references: [id])
+  ruleApplied String   @map("rule_applied")
+  rateBps     Int      @map("rate_bps")
+  amountNpr   Decimal  @db.Decimal(14, 2) @map("amount_npr")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("commissions")
+}
+
+model SupplierPayout {
+  id           String       @id @default(cuid())
+  orderId      String       @map("order_id")
+  order        Order        @relation(fields: [orderId], references: [id])
+  supplierId   String       @map("supplier_id")
+  supplier     Supplier     @relation(fields: [supplierId], references: [id])
+  amountUsd    Decimal      @db.Decimal(14, 2) @map("amount_usd")
+  fxRateUsed   Decimal      @db.Decimal(10, 4) @map("fx_rate_used")
+  method       PayoutMethod
+  status       PayoutStatus @default(PENDING)
+  referenceNo  String?      @map("reference_no")
+  proofDocKey  String?      @map("proof_doc_key")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@map("supplier_payouts")
+}
+
+model Refund {
+  id                String       @id @default(cuid())
+  orderId           String       @map("order_id")
+  order             Order        @relation(fields: [orderId], references: [id])
+  paymentId         String       @map("payment_id")
+  payment           Payment      @relation(fields: [paymentId], references: [id])
+  amountNpr         Decimal      @db.Decimal(14, 2) @map("amount_npr")
+  reason            String
+  status            RefundStatus @default(REQUESTED)
+  requestedBy       String       @map("requested_by")
+  approvedBy        String?      @map("approved_by")
+  providerRefundRef String?      @map("provider_refund_ref")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  @@map("refunds")
+}
+
+model ReconciliationReport {
+  id              String   @id @default(cuid())
+  periodStart     DateTime @map("period_start")
+  periodEnd       DateTime @map("period_end")
+  provider        String
+  matchedTotalNpr Decimal  @db.Decimal(14, 2) @map("matched_total_npr")
+  discrepancyNpr  Decimal  @db.Decimal(14, 2) @map("discrepancy_npr")
+  fileKey         String   @map("file_key")
+  generatedAt     DateTime @default(now()) @map("generated_at")
+
+  @@map("reconciliation_reports")
+}
+
+// =========================================================================
+// Audit
+// =========================================================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?  @map("actor_id")
+  actor      User?    @relation(fields: [actorId], references: [id])
+  actorRole  String   @map("actor_role")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@map("audit_log")
+}
+
+// =========================================================================
+// Enums
+// =========================================================================
+
+enum Role {
+  CUSTOMER
+  BUSINESS_BUYER
+  SUPPORT
+  FINANCE
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DELISTED
+}
+
+enum SyncType {
+  FULL_CATEGORY
+  DELTA_PRODUCT
+  ON_DEMAND
+  IMAGE_CACHE
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  DEAD_LETTER
+}
+
+enum MarginScope {
+  PLATFORM
+  CATEGORY
+  SUPPLIER
+}
+
+enum PromoType {
+  PERCENT
+  FIXED_NPR
+  FREE_SHIPPING
+}
+
+enum OrderStatus {
+  CART
+  PENDING_PAYMENT
+  PAID
+  PAYMENT_FAILED
+  SUPPLIER_PAYMENT_PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  REFUND_REQUESTED
+  DISPUTE_OPEN
+  REFUNDED
+}
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  SUCCESS
+  FAILED
+  EXPIRED
+}
+
+enum SettlementStatus {
+  PROCESSING
+  RECONCILED
+  DISCREPANCY
+}
+
+enum PayoutMethod {
+  TT
+  LC
+  ALIBABA_TRADE_ASSURANCE
+  ALIPAY
+}
+
+enum PayoutStatus {
+  PENDING
+  SENT
+  CONFIRMED
+  FAILED
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  PROCESSING
+  COMPLETED
+  REJECTED
+}

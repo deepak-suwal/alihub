@@ -1,0 +1,15 @@
+{
+  "name": "alihub",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter=@alihub/web dev",
+    "build": "pnpm --filter=@alihub/web build",
+    "start": "pnpm --filter=@alihub/web start",
+    "lint": "pnpm --filter=@alihub/web lint"
+  }
+}

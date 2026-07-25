@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: 247 249 251; /* ink-50 */
+    --surface: 255 255 255;
+    --ring: 200 90 52; /* brand-500 */
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink-50 text-ink-900 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Consistent, keyboard-visible focus across every interactive element. */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    @apply outline-none ring-2 ring-brand-500/60 ring-offset-2 ring-offset-ink-50;
+  }
+
+  ::selection {
+    @apply bg-brand-500/20 text-ink-900;
+  }
+}
+
+@layer components {
+  /* Skeleton shimmer used by loading states. */
+  .skeleton {
+    @apply relative overflow-hidden bg-ink-100;
+  }
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+  }
+
+  /* Long supplier descriptions arrive as HTML/markup — keep them readable. */
+  .prose-description {
+    @apply text-[0.95rem] leading-relaxed text-ink-700;
+  }
+  .prose-description :where(p) {
+    @apply my-3;
+  }
+  .prose-description :where(img) {
+    @apply my-4 max-w-full rounded-lg;
+  }
+  .prose-description :where(h1, h2, h3) {
+    @apply mb-2 mt-5 font-semibold text-ink-900;
+  }
+  .prose-description :where(ul, ol) {
+    @apply my-3 pl-5;
+  }
+  .prose-description :where(table) {
+    @apply my-3 w-full border-collapse text-sm;
+  }
+  .prose-description :where(td, th) {
+    @apply border border-ink-200 px-2 py-1 text-left;
+  }
+}
