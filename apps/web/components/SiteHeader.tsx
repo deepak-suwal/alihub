@@ -24,13 +24,9 @@ export function SiteHeader() {
       {/* Main header — logo, persistent search, cart. */}
       <header className="border-b border-ink-200 bg-white">
         <div className="mx-auto flex h-16 max-w-content items-center gap-4 px-4 sm:gap-6 sm:px-6">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="Alihub home">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-base font-bold text-white shadow-sm">
-              A
-            </span>
-            <span className="text-lg font-bold tracking-tight text-ink-900">
-              Ali<span className="text-brand-600">hub</span>
-            </span>
+          <Link href="/" className="flex shrink-0 items-baseline" aria-label="Alihub home">
+            <span className="text-[1.35rem] font-bold tracking-tight text-ink-900">alihub</span>
+            <span className="ml-0.5 inline-block h-1.5 w-1.5 rounded-full bg-brand-600" aria-hidden />
           </Link>
 
           <div className="hidden max-w-2xl flex-1 sm:block">
