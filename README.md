@@ -29,10 +29,10 @@ Next.js 14 (App Router) · React 18 · TypeScript · Tailwind CSS · lucide-reac
 ## Local development
 
 ```bash
-npm install
+pnpm install
 cd apps/web
 # create .env.local with the variables below, then:
-npm run dev            # http://localhost:3000
+pnpm run dev            # http://localhost:3000
 ```
 
 > `apps/web` is fully self-contained — it does not depend on the other workspace packages.
