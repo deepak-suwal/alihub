@@ -43,14 +43,16 @@ export default async function HomePage({
 /** Closing prompt — nudges another search for anything not surfaced above. */
 function CtaBand() {
   return (
-    <section className="overflow-hidden rounded-2xl border border-brand-100 bg-brand-50/60 px-6 py-10 text-center sm:px-10">
-      <h2 className="text-xl font-bold tracking-tight text-ink-900 sm:text-2xl">
-        Can’t find what you’re sourcing?
-      </h2>
-      <p className="mx-auto mt-2 max-w-md text-sm text-ink-600">
-        Search millions more products across Alibaba’s global catalog — priced in NPR, delivered to Nepal.
-      </p>
-      <Link href="/" className={buttonClasses("primary", "lg", "mt-6")}>
+    <section className="flex flex-col items-center justify-between gap-5 rounded-2xl border border-ink-200 bg-white px-6 py-7 text-center sm:flex-row sm:px-8 sm:text-left">
+      <div>
+        <h2 className="text-lg font-bold tracking-tight text-ink-900 sm:text-xl">
+          Can’t find what you’re sourcing?
+        </h2>
+        <p className="mt-1 max-w-lg text-sm text-ink-500">
+          Search millions more products across Alibaba’s global catalog — priced in NPR, delivered to Nepal.
+        </p>
+      </div>
+      <Link href="/" className={buttonClasses("primary", "md", "shrink-0")}>
         Start a search
       </Link>
     </section>
