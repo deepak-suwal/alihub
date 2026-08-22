@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     default: "Alihub — B2B sourcing for Nepal",
     template: "%s · Alihub",
   },
-  description: "Browse millions of Alibaba products priced in NPR and pay with ConnectIPS or Fonepay.",
+  description: "Browse millions of Alibaba products priced in NPR and pay with eSewa or Khalti.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
 };
 

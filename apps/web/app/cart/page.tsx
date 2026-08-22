@@ -106,9 +106,12 @@ export default function CartPage() {
           in your cart.
         </div>
         <p className="mt-2 text-sm text-ink-500">
-          Your cart is saved on this device. To place a sourcing order, share it with the Alihub team — they’ll
-          confirm the final landed NPR total and arrange payment.
+          Your cart is saved on this device. Continue to checkout to see the final landed NPR total — priced
+          live from Alibaba — and pay with eSewa or Khalti.
         </p>
+        <Link href="/checkout" className={buttonClasses("primary", "lg", "mt-4 w-full")}>
+          Proceed to checkout
+        </Link>
       </div>
 
       <div className="mt-4">

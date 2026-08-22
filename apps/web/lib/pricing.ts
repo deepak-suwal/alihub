@@ -30,22 +30,74 @@ export interface Landed {
   totalNpr: number;
 }
 
+/**
+ * Every component of a landed price, each already rounded to 2dp.
+ *
+ * `subtotalNpr + vatNpr === totalNpr` holds exactly (the total is summed from
+ * the rounded parts, not rounded independently). Checkout depends on that
+ * invariant: eSewa rejects a form whose `amount + tax_amount` does not equal
+ * `total_amount` to the paisa.
+ */
+export interface LandedBreakdown extends Landed {
+  qty: number;
+  goodsNpr: number;
+  freightNpr: number;
+  customsNpr: number;
+  marginNpr: number;
+  vatNpr: number;
+  /** Taxable value — everything except VAT. */
+  subtotalNpr: number;
+}
+
 /** Round to 2dp for display. */
 const r2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-export function landedPrice(unitPriceUsd: number, qty: number): Landed {
+export function landedBreakdown(unitPriceUsd: number, qty: number): LandedBreakdown {
   const q = Math.max(qty, 1);
-  const landedCostNpr = unitPriceUsd * q * CONFIG.fxUsdToNpr;
+  const goodsNpr = unitPriceUsd * q * CONFIG.fxUsdToNpr;
   const freightNpr = CONFIG.freightNprPerUnit * q;
-  const customsNpr = landedCostNpr * (CONFIG.customsDutyPercent / 100);
-  const vatBaseNpr = landedCostNpr + freightNpr + customsNpr;
+  const customsNpr = goodsNpr * (CONFIG.customsDutyPercent / 100);
+  const vatBaseNpr = goodsNpr + freightNpr + customsNpr;
   const vatNpr = vatBaseNpr * CONFIG.vatRate;
   const marginNpr = vatBaseNpr * (CONFIG.marginPercent / 100);
-  const totalNpr = vatBaseNpr + vatNpr + marginNpr;
-  return { unitPriceNpr: r2(totalNpr / q), totalNpr: r2(totalNpr) };
+
+  const subtotal = r2(vatBaseNpr + marginNpr);
+  const vat = r2(vatNpr);
+  const total = r2(subtotal + vat);
+
+  return {
+    qty: q,
+    goodsNpr: r2(goodsNpr),
+    freightNpr: r2(freightNpr),
+    customsNpr: r2(customsNpr),
+    marginNpr: r2(marginNpr),
+    vatNpr: vat,
+    subtotalNpr: subtotal,
+    totalNpr: total,
+    unitPriceNpr: r2(total / q),
+  };
+}
+
+export function landedPrice(unitPriceUsd: number, qty: number): Landed {
+  const { unitPriceNpr, totalNpr } = landedBreakdown(unitPriceUsd, qty);
+  return { unitPriceNpr, totalNpr };
 }
 
 /** Formats a number as an NPR amount string with thousands separators. */
 export function formatNpr(n: number): string {
   return n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/**
+ * Amount as a bare decimal string — no separators, always 2dp. Payment
+ * gateways sign the exact characters sent, so form fields and the signature
+ * message must be built from this one helper.
+ */
+export function amountString(n: number): string {
+  return n.toFixed(2);
+}
+
+/** NPR → paisa (Khalti transacts in integer paisa). */
+export function toPaisa(npr: number): number {
+  return Math.round(npr * 100);
 }

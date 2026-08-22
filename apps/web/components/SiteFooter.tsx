@@ -51,8 +51,8 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} Alihub. All rights reserved.</p>
           <p className="flex items-center gap-2">
             <span>We accept</span>
-            <span className="rounded border border-white/15 px-2 py-0.5 font-medium text-ink-300">ConnectIPS</span>
-            <span className="rounded border border-white/15 px-2 py-0.5 font-medium text-ink-300">Fonepay</span>
+            <span className="rounded border border-white/15 px-2 py-0.5 font-medium text-ink-300">eSewa</span>
+            <span className="rounded border border-white/15 px-2 py-0.5 font-medium text-ink-300">Khalti</span>
           </p>
         </div>
       </div>
