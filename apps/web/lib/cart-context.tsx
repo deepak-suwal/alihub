@@ -62,7 +62,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((i) => i.productId !== productId));
   };
 
-  const clear = () => setItems([]);
+  const clear = () => {
+    setItems([]);
+    // Purge storage here rather than leaving it to the persist effect. The
+    // order page clears the cart from a child effect, and React runs child
+    // effects before this provider's hydration effect — which would otherwise
+    // read the old cart straight back in and undo the clear.
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // storage unavailable (private mode) — in-memory clear still stands
+    }
+  };
 
   return (
     <CartContext.Provider value={{ items, addItem, updateQty, removeItem, clear }}>

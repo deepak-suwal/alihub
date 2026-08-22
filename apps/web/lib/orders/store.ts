@@ -35,8 +35,23 @@ export interface OrderStore {
 
 // ─────────────────────────── memory driver ───────────────────────────
 
-const mem = new Map<string, string>();
-const claims = new Set<string>();
+/**
+ * Hung off `globalThis` deliberately. `next dev` compiles each route on first
+ * request and can hand it a fresh instance of this module, which would give
+ * every route its own Map — an order written by /api/checkout would then be
+ * invisible to the payment callback. A global keeps one instance per process.
+ *
+ * This makes the fallback usable for local development. It does nothing for
+ * serverless, where routes run in separate processes — that is what the Redis
+ * driver and `orderStoreIsDurable` guard are for.
+ */
+const globalForStore = globalThis as typeof globalThis & {
+  __alihubOrders?: Map<string, string>;
+  __alihubClaims?: Set<string>;
+};
+
+const mem = (globalForStore.__alihubOrders ??= new Map<string, string>());
+const claims = (globalForStore.__alihubClaims ??= new Set<string>());
 
 const memoryStore: OrderStore = {
   async put(order) {
