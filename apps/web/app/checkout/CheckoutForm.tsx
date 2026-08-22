@@ -5,10 +5,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCart } from "@/lib/cart-context";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { Input, Field } from "@/components/ui/Input";
-import { Card, CardBody } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ProductImage } from "@/components/commerce/ProductImage";
-import { AlertIcon, CartIcon, ShieldIcon } from "@/components/ui/icons";
+import {
+  AlertIcon,
+  ClipboardListIcon,
+  LockIcon,
+  ReceiptIcon,
+  RotateCcwIcon,
+  ShieldIcon,
+} from "@/components/ui/icons";
 
 interface QuoteLine {
   productId: string;
@@ -137,28 +143,42 @@ export function CheckoutForm({
 
   if (items.length === 0) {
     return (
-      <EmptyState
-        icon={<CartIcon className="h-7 w-7" width={28} height={28} />}
-        title="Your cart is empty"
-        description="Add products to your cart before checking out."
-        action={
-          <Link href="/" className={buttonClasses("primary", "md")}>
-            Browse products
-          </Link>
-        }
-      />
+      <div className="px-6 py-16 lg:px-12">
+        <EmptyState
+          icon={<ClipboardListIcon className="h-7 w-7" width={28} height={28} />}
+          title="Your sourcing list is empty"
+          description="Add products before checking out."
+          action={
+            <Link href="/" className={buttonClasses("primary", "md")}>
+              Browse products
+            </Link>
+          }
+        />
+      </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight text-ink-900">Checkout</h1>
+    <>
+      {/* Progress — the design opens checkout with the three-step ledger. */}
+      <div className="flex flex-wrap items-center gap-5 border-b-2 border-divider px-6 py-4 text-[13px] lg:px-12">
+        <Step n="✓" label="List reviewed" done />
+        <Rule />
+        <Step n="2" label="Delivery & payment" current />
+        <Rule />
+        <Step n="3" label="Confirm" />
+        <span className="ml-auto hidden items-center gap-2 text-xs text-neutral-700 sm:flex">
+          <LockIcon className="h-3.5 w-3.5" />
+          Payment handled by your bank
+        </span>
+      </div>
 
-      <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-6">
-          <Card>
-            <CardBody>
-              <h2 className="mb-4 text-base font-semibold text-ink-900">Delivery details</h2>
+      <form onSubmit={submit} className="grid lg:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="border-divider px-6 py-10 lg:border-r-2 lg:px-12">
+          <h1 className="mb-8 text-[30px] lg:text-[36px]">Delivery &amp; payment</h1>
+
+          <div>
+            <div className="lbl mb-4 border-b-2 border-divider pb-3">Deliver to</div>
 
               <Field label="Full name" htmlFor="fullName">
                 <Input id="fullName" value={form.fullName} onChange={set("fullName")} required maxLength={80} />
@@ -186,153 +206,219 @@ export function CheckoutForm({
                 <Input id="address" value={form.address} onChange={set("address")} required maxLength={200} />
               </Field>
 
-              <div className="grid gap-x-4 sm:grid-cols-2">
-                <Field label="City" htmlFor="city">
-                  <Input id="city" value={form.city} onChange={set("city")} required />
-                </Field>
-                <Field label="Note for the team" htmlFor="note" hint="(optional)">
-                  <Input id="note" value={form.note} onChange={set("note")} maxLength={500} />
-                </Field>
-              </div>
-            </CardBody>
-          </Card>
+            <div className="grid gap-x-5 sm:grid-cols-2">
+              <Field label="City" htmlFor="city">
+                <Input id="city" value={form.city} onChange={set("city")} required />
+              </Field>
+              <Field label="Note for the team" htmlFor="note" hint="(optional)">
+                <Input id="note" value={form.note} onChange={set("note")} maxLength={500} />
+              </Field>
+            </div>
+          </div>
 
-          <Card>
-            <CardBody>
-              <h2 className="mb-4 text-base font-semibold text-ink-900">Payment method</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {providers.map((p) => (
+          <div className="mt-8">
+            <div className="lbl mb-4 border-b-2 border-divider pb-3">Pay with</div>
+            <div className="grid max-w-[740px] gap-4 sm:grid-cols-2">
+              {providers.map((p) => {
+                const active = provider === p.code;
+                return (
                   <label
                     key={p.code}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
-                      provider === p.code
-                        ? "border-brand-400 bg-brand-50"
-                        : "border-ink-200 bg-white hover:border-ink-300"
+                    className={`flex cursor-pointer flex-col gap-2 p-5 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent ${
+                      active ? "border-2 border-accent" : "border border-divider hover:border-neutral-500"
                     }`}
                   >
+                    <span className="flex items-center justify-between">
+                      <span className="text-base font-extrabold">{p.label}</span>
+                      <span
+                        className={`h-3.5 w-3.5 ${active ? "bg-accent" : "border border-divider"}`}
+                        aria-hidden
+                      />
+                    </span>
+                    <span className="text-xs text-neutral-700">{PROVIDER_BLURB[p.code] ?? ""}</span>
                     <input
                       type="radio"
                       name="provider"
                       value={p.code}
-                      checked={provider === p.code}
+                      checked={active}
                       onChange={() => setProvider(p.code)}
-                      className="h-4 w-4 accent-brand-600"
+                      className="sr-only"
                     />
-                    <span className="text-sm font-semibold text-ink-900">{p.label}</span>
                   </label>
-                ))}
-              </div>
-              <p className="mt-3 flex items-start gap-2 text-xs text-ink-500">
-                <ShieldIcon className="mt-0.5 h-4 w-4 shrink-0 text-ink-400" />
-                You pay on the gateway&apos;s own secure page. Alihub never sees your PIN, OTP or card details.
-              </p>
-            </CardBody>
-          </Card>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex max-w-[740px] items-center gap-2.5 bg-surface p-3.5 text-[13px]">
+              <ReceiptIcon className="h-4 w-4 shrink-0 text-accent" />
+              <span>
+                A VAT invoice is issued with the order — duty and VAT are itemised for your filing.
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className="lg:sticky lg:top-6 lg:self-start">
-          <Card>
-            <CardBody>
-              <h2 className="mb-4 text-base font-semibold text-ink-900">Order summary</h2>
+        <aside className="px-6 py-10 lg:px-8 lg:py-10">
+          <div className="lg:sticky lg:top-32">
+            <div className="lbl mb-4">Order summary</div>
 
-              {quoting ? (
-                <p className="py-6 text-center text-sm text-ink-500">Fetching live prices…</p>
-              ) : quoteError ? (
-                <div className="rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm text-brand-800">
-                  <p className="flex items-start gap-2">
-                    <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
-                    {quoteError}
-                  </p>
-                  <Button variant="secondary" size="sm" className="mt-3" onClick={() => void loadQuote()}>
-                    Try again
-                  </Button>
-                </div>
-              ) : quote ? (
-                <>
-                  <ul className="space-y-3">
-                    {quote.lines.map((line) => (
-                      <li key={line.productId} className="flex gap-3">
-                        <ProductImage
-                          src={line.imageUrl}
-                          alt={line.title}
-                          className="h-12 w-12 shrink-0 rounded-lg border border-ink-100"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="line-clamp-2 text-xs font-medium text-ink-800">{line.title}</p>
-                          <p className="mt-0.5 text-xs text-ink-400">
-                            {line.qty} × रू {npr(line.unitPriceNpr)}
-                          </p>
-                        </div>
-                        <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-ink-900">
-                          रू {npr(line.totalNpr)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {quote.rejected.length > 0 ? (
-                    <p className="mt-3 rounded-lg bg-ink-50 p-2.5 text-xs text-ink-500">
-                      {quote.rejected.length} product{quote.rejected.length === 1 ? "" : "s"} could not be
-                      priced and {quote.rejected.length === 1 ? "has" : "have"} been left out of this order.
-                    </p>
-                  ) : null}
-
-                  <dl className="mt-4 space-y-1.5 border-t border-ink-100 pt-4 text-sm">
-                    <div className="flex justify-between text-ink-600">
-                      <dt>Subtotal (landed)</dt>
-                      <dd className="tabular-nums">रू {npr(quote.subtotalNpr)}</dd>
-                    </div>
-                    <div className="flex justify-between text-ink-600">
-                      <dt>VAT 13%</dt>
-                      <dd className="tabular-nums">रू {npr(quote.vatNpr)}</dd>
-                    </div>
-                    <div className="flex justify-between border-t border-ink-100 pt-2 text-base font-bold text-ink-900">
-                      <dt>Total</dt>
-                      <dd className="tabular-nums">रू {npr(quote.totalNpr)}</dd>
-                    </div>
-                  </dl>
-                  <p className="mt-2 text-xs text-ink-400">
-                    Includes freight, customs duty and Alihub margin. Priced live from Alibaba just now.
-                  </p>
-                </>
-              ) : null}
-
-              {error ? (
-                <p className="mt-4 flex items-start gap-2 rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm text-brand-800">
+            {quoting ? (
+              <p className="py-6 text-center text-sm text-neutral-700">Fetching live prices…</p>
+            ) : quoteError ? (
+              <div className="border border-accent bg-accent-100 p-3 text-sm text-accent-800">
+                <p className="flex items-start gap-2">
                   <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
-                  {error}
+                  {quoteError}
                 </p>
-              ) : null}
+                <Button variant="secondary" size="sm" className="mt-3" onClick={() => void loadQuote()}>
+                  Try again
+                </Button>
+              </div>
+            ) : quote ? (
+              <>
+                <ul>
+                  {quote.lines.map((line) => (
+                    <li
+                      key={line.productId}
+                      className="flex gap-3 border-b border-divider py-3 first:border-t"
+                    >
+                      <ProductImage
+                        src={line.imageUrl}
+                        alt={line.title}
+                        className="h-12 w-12 shrink-0 border border-divider"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-2 text-xs font-extrabold">{line.title}</p>
+                        <p className="mt-0.5 text-xs text-neutral-700 tabular-nums">
+                          {line.qty} × {npr(line.unitPriceNpr)}
+                        </p>
+                      </div>
+                      <span className="whitespace-nowrap text-xs font-extrabold tabular-nums">
+                        {npr(line.totalNpr)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
 
-              {!durableStore ? (
-                <p className="mt-4 rounded-lg bg-ink-50 p-2.5 text-xs text-ink-500">
-                  Development mode: orders are kept in memory only.
-                </p>
-              ) : null}
+                {quote.rejected.length > 0 ? (
+                  <p className="mt-3 bg-surface p-2.5 text-xs text-neutral-700">
+                    {quote.rejected.length} product{quote.rejected.length === 1 ? "" : "s"} could not be
+                    priced and {quote.rejected.length === 1 ? "has" : "have"} been left out of this order.
+                  </p>
+                ) : null}
 
-              <Button
-                type="submit"
-                size="lg"
-                className="mt-5 w-full"
-                disabled={submitting || quoting || !quote || !provider}
-              >
-                {submitting
-                  ? "Redirecting…"
-                  : quote
-                    ? `Pay रू ${npr(quote.totalNpr)}`
-                    : "Pay"}
-              </Button>
+                <table className="table table-flush mt-4 text-[13px]">
+                  <tbody>
+                    <tr>
+                      <td>Landed subtotal</td>
+                      <td className="text-right tabular-nums">{npr(quote.subtotalNpr)}</td>
+                    </tr>
+                    <tr>
+                      <td>VAT · 13%</td>
+                      <td className="text-right tabular-nums">{npr(quote.vatNpr)}</td>
+                    </tr>
+                  </tbody>
+                </table>
 
-              <Link
-                href="/cart"
-                className="mt-3 block text-center text-sm font-medium text-ink-500 hover:text-ink-800"
-              >
-                ← Back to cart
-              </Link>
-            </CardBody>
-          </Card>
-        </div>
+                {/* The figure that matters, given the design's accent block. */}
+                <div className="mt-4 bg-accent p-5 text-ground">
+                  <div className="mb-1.5 text-[11px] uppercase tracking-[0.1em]">
+                    Pay now · total landed
+                  </div>
+                  <div className="text-[32px] font-extrabold leading-none tabular-nums">
+                    {npr(quote.totalNpr)}
+                  </div>
+                  <div className="mt-2 text-xs">NPR · duty, VAT and delivery included</div>
+                </div>
+              </>
+            ) : null}
+
+            {error ? (
+              <p className="mt-4 flex items-start gap-2 border border-accent bg-accent-100 p-3 text-sm text-accent-800">
+                <AlertIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                {error}
+              </p>
+            ) : null}
+
+            {!durableStore ? (
+              <p className="mt-4 bg-surface p-2.5 text-xs text-neutral-700">
+                Development mode: orders are kept in memory only.
+              </p>
+            ) : null}
+
+            <Button
+              type="submit"
+              size="lg"
+              className="mt-4 w-full"
+              disabled={submitting || quoting || !quote || !provider}
+            >
+              {submitting
+                ? "Redirecting…"
+                : quote
+                  ? `Pay with ${providers.find((p) => p.code === provider)?.label ?? "gateway"}`
+                  : "Pay"}
+            </Button>
+
+            <div className="mt-4 flex flex-col gap-2 text-xs text-neutral-700">
+              <span className="flex items-center gap-2">
+                <ShieldIcon className="h-3.5 w-3.5 shrink-0 text-accent" />
+                Landed price fixed at this total — no border surprises.
+              </span>
+              <span className="flex items-center gap-2">
+                <RotateCcwIcon className="h-3.5 w-3.5 shrink-0 text-accent" />
+                Refunded in full if the supplier cannot fulfil.
+              </span>
+            </div>
+
+            <Link
+              href="/cart"
+              className="mt-4 block text-center text-sm text-neutral-700 hover:text-accent"
+            >
+              ← Back to sourcing list
+            </Link>
+          </div>
+        </aside>
       </form>
-    </div>
+    </>
   );
 }
+
+function Step({
+  n,
+  label,
+  done,
+  current,
+}: {
+  n: string;
+  label: string;
+  done?: boolean;
+  current?: boolean;
+}) {
+  return (
+    <span
+      className={`flex items-center gap-2 ${current ? "font-extrabold" : "text-neutral-600"}`}
+    >
+      <span
+        className={`flex h-5 w-5 items-center justify-center text-[11px] ${
+          done
+            ? "bg-neutral-400 text-ground"
+            : current
+              ? "bg-accent text-ground"
+              : "border border-divider"
+        }`}
+      >
+        {n}
+      </span>
+      {label}
+    </span>
+  );
+}
+
+function Rule() {
+  return <span className="hidden h-0.5 w-6 bg-divider sm:block" aria-hidden />;
+}
+
+const PROVIDER_BLURB: Record<string, string> = {
+  esewa: "Pay from your eSewa wallet or linked bank account.",
+  khalti: "Pay with Khalti wallet, mobile banking or connected IPS.",
+};

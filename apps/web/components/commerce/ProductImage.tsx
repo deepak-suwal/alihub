@@ -28,9 +28,9 @@ export function ProductImage({
   const showFallback = !src || failed;
 
   return (
-    <div className={cn("relative flex items-center justify-center overflow-hidden bg-white", className)}>
+    <div className={cn("relative flex items-center justify-center overflow-hidden bg-ground", className)}>
       {showFallback ? (
-        <PackageIcon className="h-8 w-8 text-ink-200" width={32} height={32} strokeWidth={1.5} />
+        <PackageIcon className="h-8 w-8 text-neutral-400" width={32} height={32} strokeWidth={1.5} />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img

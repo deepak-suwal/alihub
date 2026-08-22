@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --bg: 247 249 251; /* ink-50 */
-    --surface: 255 255 255;
-    --ring: 200 90 52; /* brand-500 */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
 
   html {
@@ -15,48 +15,196 @@
   }
 
   body {
-    @apply bg-ink-50 text-ink-900 antialiased;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply bg-ground text-ink antialiased;
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 400;
   }
 
-  /* Consistent, keyboard-visible focus across every interactive element. */
-  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-    @apply outline-none ring-2 ring-brand-500/60 ring-offset-2 ring-offset-ink-50;
+  /* Archivo 800 for every heading, tight and slightly tucked in — the
+     system's loudest signal after the accent. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0;
+  }
+
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+    outline-style: solid;
   }
 
   ::selection {
-    @apply bg-brand-500/20 text-ink-900;
+    background: rgb(236 48 19 / 0.3);
+  }
+
+  /* Figures are read in columns and compared — always tabular. */
+  .tnum,
+  [data-figure] {
+    font-variant-numeric: tabular-nums;
   }
 }
 
 @layer components {
+  /* ── Micro-label ──────────────────────────────────────────────────────
+     The system's connective tissue: every section, field and stat is
+     introduced by one of these. */
+  .lbl {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(32 30 29 / 0.55);
+    line-height: 1.4;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 border border-transparent px-4 py-2 text-sm;
+    font-weight: 800;
+    line-height: 1.2;
+    text-decoration: none;
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    @apply bg-accent text-ground;
+  }
+  .btn-primary:not(:disabled):hover {
+    @apply bg-accent-600;
+  }
+  .btn-primary:not(:disabled):active {
+    @apply bg-accent-700;
+  }
+  .btn-secondary {
+    @apply border-divider text-ink;
+  }
+  .btn-secondary:not(:disabled):hover {
+    background: rgb(32 30 29 / 0.07);
+  }
+  .btn-secondary:not(:disabled):active {
+    background: rgb(32 30 29 / 0.14);
+  }
+  .btn-ghost {
+    @apply px-1 text-accent;
+  }
+  .btn-ghost:not(:disabled):hover {
+    background: rgb(236 48 19 / 0.1);
+  }
+  .btn-block {
+    @apply w-full;
+  }
+
+  /* ── Forms ── */
+  .field > label {
+    @apply mb-1.5 block text-xs;
+    color: rgb(32 30 29 / 0.7);
+  }
+  .input {
+    @apply w-full border border-divider bg-surface px-2.5 py-1.5 text-sm text-ink;
+    min-height: 36px;
+    caret-color: #ec3013;
+  }
+  .input::placeholder {
+    @apply text-neutral-600;
+  }
+  .input:hover {
+    border-color: rgb(32 30 29 / 0.45);
+  }
+  .input:focus-visible {
+    @apply border-accent;
+    outline-offset: 0;
+  }
+  textarea.input {
+    min-height: 90px;
+    resize: vertical;
+  }
+
+  /* ── Tables — the ledger, used for pricing breakdowns everywhere ── */
+  .table {
+    @apply w-full border-collapse text-sm;
+  }
+  .table th {
+    @apply border-b-2 border-divider p-2 text-left;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(32 30 29 / 0.6);
+  }
+  .table td {
+    @apply border-b border-divider p-2;
+  }
+  /* Ledger tables run edge to edge inside their block. */
+  .table-flush th:first-child,
+  .table-flush td:first-child {
+    @apply pl-0;
+  }
+  .table-flush th:last-child,
+  .table-flush td:last-child {
+    @apply pr-0;
+  }
+  .table-flush tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  /* ── Tags ── */
+  .tag {
+    @apply inline-flex items-center px-2.5 py-[3px] text-[11px];
+    letter-spacing: 0.02em;
+  }
+  .tag-accent {
+    @apply bg-accent-100 text-accent-800;
+  }
+  .tag-neutral {
+    @apply bg-neutral-100 text-neutral-800;
+  }
+  .tag-outline {
+    @apply border border-accent text-accent;
+  }
+
+  /* ── Rules ── */
+  .hr {
+    @apply my-4 h-0.5 border-0 bg-divider;
+  }
+
+  /* Product photography is printed grayscale throughout the system. */
+  .grayscale-img {
+    filter: grayscale(1) contrast(1.08);
+  }
+
   /* Skeleton shimmer used by loading states. */
   .skeleton {
-    @apply relative overflow-hidden bg-ink-100;
+    @apply relative overflow-hidden bg-neutral-200;
   }
   .skeleton::after {
     content: "";
     @apply absolute inset-0 -translate-x-full animate-shimmer;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.6),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.6), transparent);
   }
 
   /* Long supplier descriptions arrive as HTML/markup — keep them readable. */
   .prose-description {
-    @apply text-[0.95rem] leading-relaxed text-ink-700;
+    @apply text-sm leading-relaxed text-neutral-800;
   }
   .prose-description :where(p) {
     @apply my-3;
   }
   .prose-description :where(img) {
-    @apply my-4 max-w-full rounded-lg;
+    @apply my-4 max-w-full grayscale;
   }
   .prose-description :where(h1, h2, h3) {
-    @apply mb-2 mt-5 font-semibold text-ink-900;
+    @apply mb-2 mt-5 text-base font-extrabold text-ink;
   }
   .prose-description :where(ul, ol) {
     @apply my-3 pl-5;
@@ -65,6 +213,6 @@
     @apply my-3 w-full border-collapse text-sm;
   }
   .prose-description :where(td, th) {
-    @apply border border-ink-200 px-2 py-1 text-left;
+    @apply border border-divider px-2 py-1 text-left;
   }
 }

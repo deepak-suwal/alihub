@@ -1,63 +1,84 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Alihub storefront design system.
+ * Alihub storefront — "Modernist" design system.
  *
- * Two families drive everything: a warm terracotta `brand` (the buying
- * action — CTAs, prices, focus) and a cool `ink` neutral (text, surfaces,
- * borders). Tokens are exposed as CSS variables in globals.css so the same
- * scale can theme future dark mode without touching component classes.
+ * Ported from the design's styles.css, which is the source of truth. The
+ * system is Swiss/editorial: a warm off-white ground, near-black ink, one
+ * vivid accent, Archivo at 800 for every heading, and — the signature —
+ * zero border radius anywhere. Structure is carried by rules (2px for major
+ * divisions, 1px within a block), never by rounded cards or soft shadows.
  */
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: "#fdf4f1",
-          100: "#fae6de",
-          200: "#f3c8b7",
-          300: "#eaa387",
-          400: "#df7854",
-          500: "#c85a34",
-          600: "#b5502b", // legacy accent — the anchor of the scale
-          700: "#963f22",
-          800: "#79341f",
-          900: "#642e1e",
+        ground: "#f3f2f2", // --color-bg
+        surface: "#eae9e9", // --color-surface
+        ink: "#201e1d", // --color-text
+        divider: "rgb(32 30 29 / 0.4)", // --color-divider
+        accent: {
+          DEFAULT: "#ec3013",
+          100: "#fff2ef",
+          200: "#ffe0d9",
+          300: "#ffc4b8",
+          400: "#ff9783",
+          500: "#ff563c",
+          600: "#dd2b0f",
+          700: "#ae1800",
+          800: "#7c1405",
+          900: "#4d170e",
         },
-        ink: {
-          50: "#f7f9fb",
-          100: "#eef2f5",
-          200: "#d8e0e8",
-          300: "#b6c3d1",
-          400: "#8598ac",
-          500: "#5f7289",
-          600: "#52698a",
-          700: "#3b4d67",
-          800: "#26344a",
-          900: "#14243a", // legacy ink
+        accent2: {
+          DEFAULT: "#e15b47",
+          100: "#fff2ef",
+          200: "#ffe0da",
+          300: "#ffc4b9",
+          400: "#ff9784",
+          500: "#ef6853",
+          600: "#c94b39",
+          700: "#9e3526",
+          800: "#71261b",
+          900: "#471d16",
+        },
+        neutral: {
+          100: "#f8f4f4",
+          200: "#eae7e7",
+          300: "#d7d3d3",
+          400: "#bab6b6",
+          500: "#9b9797",
+          600: "#7d7979",
+          700: "#605d5d",
+          800: "#444141",
+          900: "#2d2b2b",
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-archivo)", "system-ui", "sans-serif"],
       },
+      // The system is hard-edged: every radius token is 0.
       borderRadius: {
-        lg: "0.625rem",
-        xl: "0.875rem",
-        "2xl": "1.125rem",
+        none: "0",
+        sm: "0",
+        DEFAULT: "0",
+        md: "0",
+        lg: "0",
+        xl: "0",
+        "2xl": "0",
+        "3xl": "0",
+        full: "9999px", // kept for genuine circles (radio dots, avatars)
       },
       boxShadow: {
-        card: "0 1px 2px rgba(20, 36, 58, 0.04), 0 1px 3px rgba(20, 36, 58, 0.06)",
-        "card-hover": "0 6px 16px -4px rgba(20, 36, 58, 0.12), 0 2px 6px rgba(20, 36, 58, 0.06)",
-        pop: "0 12px 32px -8px rgba(20, 36, 58, 0.18)",
+        sm: "0 1px 2px rgb(45 43 43 / 0.14)",
+        md: "0 3px 10px rgb(45 43 43 / 0.16)",
+        lg: "0 12px 32px rgb(45 43 43 / 0.22)",
       },
       maxWidth: {
-        content: "1180px",
+        content: "1440px",
       },
       keyframes: {
-        shimmer: {
-          "100%": { transform: "translateX(100%)" },
-        },
+        shimmer: { "100%": { transform: "translateX(100%)" } },
         "fade-in": {
           from: { opacity: "0", transform: "translateY(4px)" },
           to: { opacity: "1", transform: "translateY(0)" },

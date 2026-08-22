@@ -1,22 +1,21 @@
 import Link from "next/link";
 import { CATEGORY_TILES, POPULAR_SEARCHES } from "@/lib/home-collections";
+import { Wordmark } from "./SiteHeader";
 
 /**
- * Production-style footer: brand column plus real navigation (categories and
- * popular searches are live search links), with payments and legal in the
- * bottom bar. Dark to bookend the utility bar at the top of the page.
+ * Footer on the page ground, opened by a 2px rule — the design keeps the
+ * whole surface light rather than bookending it with a dark band.
  */
 export function SiteFooter() {
   return (
-    <footer className="mt-auto bg-ink-900 text-ink-300">
-      <div className="mx-auto max-w-content px-4 py-12 sm:px-6">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
-          <div className="max-w-xs">
-            <Link href="/" className="inline-flex items-baseline" aria-label="Alihub home">
-              <span className="text-xl font-bold tracking-tight text-white">alihub</span>
-              <span className="ml-0.5 inline-block h-1.5 w-1.5 rounded-full bg-brand-500" aria-hidden />
+    <footer className="mt-auto border-t-2 border-divider">
+      <div className="mx-auto max-w-content px-4 py-10 sm:px-6 lg:px-12">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div>
+            <Link href="/" aria-label="Alihub home" className="inline-block">
+              <Wordmark size={20} />
             </Link>
-            <p className="mt-3 text-sm leading-relaxed text-ink-400">
+            <p className="mt-3 max-w-[300px] text-[13px] text-neutral-700">
               B2B sourcing for Nepal. Live Alibaba prices converted to rupees with duties and
               delivery built in — pay locally, no international cards required.
             </p>
@@ -26,7 +25,7 @@ export function SiteFooter() {
             title="Marketplace"
             links={[
               { label: "Browse products", href: "/" },
-              { label: "Cart", href: "/cart" },
+              { label: "Sourcing list", href: "/cart" },
             ]}
           />
 
@@ -47,12 +46,12 @@ export function SiteFooter() {
           />
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-ink-400 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-divider pt-6 text-xs text-neutral-700 sm:flex-row">
           <p>© {new Date().getFullYear()} Alihub. All rights reserved.</p>
           <p className="flex items-center gap-2">
             <span>We accept</span>
-            <span className="rounded border border-white/15 px-2 py-0.5 font-medium text-ink-300">eSewa</span>
-            <span className="rounded border border-white/15 px-2 py-0.5 font-medium text-ink-300">Khalti</span>
+            <span className="border border-divider px-2 py-0.5">eSewa</span>
+            <span className="border border-divider px-2 py-0.5">Khalti</span>
           </p>
         </div>
       </div>
@@ -63,11 +62,11 @@ export function SiteFooter() {
 function FooterCol({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
     <nav aria-label={title}>
-      <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-500">{title}</h3>
-      <ul className="mt-3 space-y-2 text-sm">
+      <h3 className="lbl mb-3">{title}</h3>
+      <ul className="flex flex-col gap-2 text-[13px]">
         {links.map((link) => (
           <li key={link.label}>
-            <Link href={link.href} className="text-ink-300 transition-colors hover:text-white">
+            <Link href={link.href} className="transition-colors hover:text-accent">
               {link.label}
             </Link>
           </li>

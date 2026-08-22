@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Inter } from "next/font/google";
+import { Archivo } from "next/font/google";
 import { CartProvider } from "@/lib/cart-context";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+// Archivo carries the whole system — 800 for headings, 400/600 for text.
+const archivo = Archivo({
+  subsets: ["latin"],
+  weight: ["400", "600", "800"],
+  variable: "--font-archivo",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -19,11 +25,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={archivo.variable}>
       <body className="flex min-h-screen flex-col font-sans">
         <CartProvider>
           <SiteHeader />
-          <main className="mx-auto w-full max-w-content flex-1 px-4 py-8 sm:px-6 lg:py-10">{children}</main>
+          <main className="mx-auto w-full max-w-content flex-1">{children}</main>
           <SiteFooter />
         </CartProvider>
       </body>

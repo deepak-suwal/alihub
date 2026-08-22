@@ -14,7 +14,7 @@ export function ProductGallery({ images, title }: { images: { url: string }[]; t
         src={urls[active]}
         alt={title}
         sizes="(max-width: 1024px) 100vw, 560px"
-        className="aspect-square rounded-xl border border-ink-200"
+        className="aspect-square border border-divider"
       />
       {urls.length > 1 ? (
         <div className="grid grid-cols-5 gap-2">
@@ -25,8 +25,8 @@ export function ProductGallery({ images, title }: { images: { url: string }[]; t
               onClick={() => setActive(i)}
               aria-label={`View image ${i + 1}`}
               className={cn(
-                "overflow-hidden rounded-lg border transition-colors",
-                i === active ? "border-brand-500 ring-1 ring-brand-500" : "border-ink-200 hover:border-ink-300",
+                "overflow-hidden  border transition-colors",
+                i === active ? "border-accent " : "border-divider hover:border-neutral-500",
               )}
             >
               <ProductImage src={url} alt={`${title} thumbnail ${i + 1}`} className="aspect-square" />

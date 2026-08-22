@@ -1,28 +1,33 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "@/components/ui/icons";
 
-/** Consistent section header with an optional subtitle and "view all" link. */
+/**
+ * Section header: title and "view all" on one baseline, sitting on a 2px
+ * rule. Used to open every band on the page.
+ */
 export function SectionHeading({
   title,
   subtitle,
   viewAllHref,
+  viewAllLabel = "View all",
 }: {
   title: string;
   subtitle?: string;
   viewAllHref?: string;
+  viewAllLabel?: string;
 }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4">
-      <div>
-        <h2 className="text-xl font-bold tracking-tight text-ink-900">{title}</h2>
-        {subtitle ? <p className="mt-1 text-sm text-ink-500">{subtitle}</p> : null}
+    <div className="mb-6 flex items-baseline justify-between gap-4 border-b-2 border-divider pb-3">
+      <div className="flex items-baseline gap-4">
+        <h2 className="text-[28px]">{title}</h2>
+        {subtitle ? <span className="lbl">{subtitle}</span> : null}
       </div>
       {viewAllHref ? (
         <Link
           href={viewAllHref}
-          className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-brand-700 hover:text-brand-800"
+          className="inline-flex shrink-0 items-center gap-1.5 text-[13px] text-accent-700 hover:text-accent"
         >
-          View all <ArrowRightIcon className="h-4 w-4" />
+          {viewAllLabel} <ArrowRightIcon className="h-3.5 w-3.5" />
         </Link>
       ) : null}
     </div>

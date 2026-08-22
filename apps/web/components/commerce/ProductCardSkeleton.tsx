@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 export function ProductCardSkeleton() {
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-ink-200 bg-white shadow-card">
+    <div className="flex flex-col overflow-hidden border border-divider bg-ground">
       <Skeleton className="aspect-square rounded-none" />
       <div className="flex flex-col gap-2 p-4">
         <Skeleton className="h-4 w-full" />

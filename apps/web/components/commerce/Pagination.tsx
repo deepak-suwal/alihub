@@ -23,7 +23,7 @@ export function Pagination({
   const prev = Math.max(1, page - 1);
   const next = Math.min(totalPages, page + 1);
   const linkCls =
-    "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-ink-200 bg-white px-3 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-50";
+    "inline-flex h-9 min-w-9 items-center justify-center  border border-divider bg-ground px-3 text-sm  text-neutral-800 transition-colors hover:bg-surface";
   const disabledCls = "pointer-events-none opacity-40";
 
   return (
@@ -31,8 +31,8 @@ export function Pagination({
       <Link href={pageHref(params, prev)} className={cn(linkCls, page <= 1 && disabledCls)} aria-label="Previous page">
         ← Prev
       </Link>
-      <span className="px-2 text-sm text-ink-500">
-        Page <span className="font-semibold text-ink-800">{page}</span> of {totalPages}
+      <span className="px-2 text-sm text-neutral-700">
+        Page <span className="font-extrabold text-ink">{page}</span> of {totalPages}
       </span>
       <Link href={pageHref(params, next)} className={cn(linkCls, page >= totalPages && disabledCls)} aria-label="Next page">
         Next →

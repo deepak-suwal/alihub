@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
-import { CartIcon } from "@/components/ui/icons";
+import { ClipboardListIcon } from "@/components/ui/icons";
 
+/** "Sourcing list" in the design's language — a buyer's working set, not a retail cart. */
 export function CartBadge() {
   const { items } = useCart();
   const count = items.reduce((sum, i) => sum + i.qty, 0);
@@ -11,15 +12,13 @@ export function CartBadge() {
   return (
     <Link
       href="/cart"
-      className="relative flex items-center gap-1.5 rounded-lg px-3 py-2 transition-colors hover:bg-ink-100 hover:text-ink-900"
-      aria-label={`Cart${count > 0 ? `, ${count} items` : ", empty"}`}
+      className="flex items-center gap-2 font-extrabold transition-colors hover:text-accent"
+      aria-label={`Sourcing list${count > 0 ? `, ${count} units` : ", empty"}`}
     >
-      <CartIcon className="h-5 w-5" />
-      <span className="hidden sm:inline">Cart</span>
+      <ClipboardListIcon className="h-[18px] w-[18px]" />
+      <span className="hidden sm:inline">Sourcing list</span>
       {count > 0 ? (
-        <span className="ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-xs font-bold text-white">
-          {count}
-        </span>
+        <span className="bg-accent px-[7px] py-px text-[13px] text-ground tabular-nums">{count}</span>
       ) : null}
     </Link>
   );

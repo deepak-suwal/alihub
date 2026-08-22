@@ -19,18 +19,18 @@ export function ProductRail({
   if (items.length === 0) return null;
 
   return (
-    <section>
+    <section className="border-b-2 border-divider px-6 py-10 lg:px-12">
       <SectionHeading title={title} viewAllHref={`/?q=${encodeURIComponent(keyword)}`} />
-      <div className="relative">
-        <div className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {items.map((product) => (
-            <div key={product.id} className="w-40 shrink-0 snap-start sm:w-48">
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
-        {/* Fade hint that the row scrolls further. */}
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-12 bg-gradient-to-l from-ink-50 to-transparent sm:block" />
+      {/* Scrolls on small screens; settles into the design's 5-up grid on desktop. */}
+      <div className="-mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-2 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
+        {items.slice(0, 10).map((product, i) => (
+          <div
+            key={product.id}
+            className={`w-40 shrink-0 snap-start sm:w-48 lg:w-auto ${i >= 5 ? "lg:hidden" : ""}`}
+          >
+            <ProductCard product={product} />
+          </div>
+        ))}
       </div>
     </section>
   );

@@ -18,13 +18,13 @@ export default function CheckoutPage() {
 
   if (providers.length === 0) {
     return (
-      <div className="mx-auto max-w-xl rounded-xl border border-ink-200 bg-white p-6 text-center shadow-card">
-        <h1 className="text-lg font-semibold text-ink-900">Online payment is unavailable</h1>
-        <p className="mt-2 text-sm text-ink-500">
+      <div className="mx-auto max-w-xl border border-divider bg-ground p-6 text-center">
+        <h1 className="text-lg font-extrabold text-ink">Online payment is unavailable</h1>
+        <p className="mt-2 text-sm text-neutral-700">
           No payment gateway is configured on this deployment yet. Please contact the Alihub team to place
           your order.
         </p>
-        <Link href="/cart" className="mt-5 inline-block text-sm font-medium text-brand-700 hover:text-brand-800">
+        <Link href="/cart" className="mt-5 inline-block text-sm text-accent-700 hover:text-accent-800">
           ← Back to cart
         </Link>
       </div>

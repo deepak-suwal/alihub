@@ -83,6 +83,20 @@ export function landedPrice(unitPriceUsd: number, qty: number): Landed {
   return { unitPriceNpr, totalNpr };
 }
 
+/**
+ * The rates in force, for display. The design's "cost ledger" states each
+ * rate alongside its amount ("Customs duty · 15%"), so the UI needs the
+ * inputs, not just the results.
+ */
+export function pricingRates() {
+  return {
+    fxUsdToNpr: CONFIG.fxUsdToNpr,
+    customsDutyPercent: CONFIG.customsDutyPercent,
+    marginPercent: CONFIG.marginPercent,
+    vatPercent: CONFIG.vatRate * 100,
+  };
+}
+
 /** Formats a number as an NPR amount string with thousands separators. */
 export function formatNpr(n: number): string {
   return n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

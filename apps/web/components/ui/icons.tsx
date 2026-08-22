@@ -6,7 +6,9 @@
 export {
   Search as SearchIcon,
   ShoppingCart as CartIcon,
+  ClipboardList as ClipboardListIcon,
   Package as PackageIcon,
+  PackageSearch as PackageSearchIcon,
   Check as CheckIcon,
   ArrowRight as ArrowRightIcon,
   ShieldCheck as ShieldIcon,
@@ -14,4 +16,9 @@ export {
   Tag as TagIcon,
   AlertTriangle as AlertIcon,
   Trash2 as TrashIcon,
+  Factory as FactoryIcon,
+  Receipt as ReceiptIcon,
+  Lock as LockIcon,
+  TrendingDown as TrendingDownIcon,
+  RotateCcw as RotateCcwIcon,
 } from "lucide-react";

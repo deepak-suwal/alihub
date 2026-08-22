@@ -15,8 +15,8 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
         <AlertIcon className="h-7 w-7" width={28} height={28} />
       </div>
-      <h1 className="text-lg font-semibold text-ink-900">Something went wrong</h1>
-      <p className="mt-1.5 text-sm text-ink-500">
+      <h1 className="text-lg font-extrabold text-ink">Something went wrong</h1>
+      <p className="mt-1.5 text-sm text-neutral-700">
         An unexpected error occurred while loading this page. You can try again.
       </p>
       <div className="mt-6">

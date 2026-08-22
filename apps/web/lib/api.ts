@@ -5,7 +5,7 @@
  */
 import { callAlibaba, ALIBABA_PATHS } from "./alibaba/client";
 import { mapSearch, mapDetail } from "./alibaba/mapper";
-import { landedPrice, formatNpr } from "./pricing";
+import { landedPrice, landedBreakdown, pricingRates, formatNpr } from "./pricing";
 
 export interface ProductSummary {
   id: string;
@@ -50,6 +50,20 @@ export interface ProductDetail {
   category: { id: string; nameEn: string; nameLocal: string | null };
   priceTiers: PriceTier[];
   priceAtMoq: { qty: number; unitPriceNpr: string; totalNpr: string };
+  /** Per-unit cost ledger — what the landed NPR price is actually made of. */
+  priceLedger: PriceLedger;
+}
+
+/** One line of the landed-cost breakdown, already formatted for display. */
+export interface PriceLedgerRow {
+  label: string;
+  amountNpr: string;
+}
+
+export interface PriceLedger {
+  rows: PriceLedgerRow[];
+  totalNpr: string;
+  unitLabel: string;
 }
 
 export interface Category {
@@ -113,6 +127,26 @@ export async function getProduct(id: string): Promise<ProductDetail> {
   const moqTier = tiers.find((t) => t.minQty <= d.minOrderQuantity) ?? tiers[0];
   const moq = landedPrice(moqTier.unitPriceUsd, d.minOrderQuantity);
 
+  // Per-unit ledger: divide the order-level breakdown by quantity so the
+  // rows add up to the unit price the customer is quoted.
+  const rates = pricingRates();
+  const b = landedBreakdown(moqTier.unitPriceUsd, d.minOrderQuantity);
+  const perUnit = (n: number) => formatNpr(n / b.qty);
+  const priceLedger: PriceLedger = {
+    unitLabel: d.unitType.toLowerCase(),
+    rows: [
+      {
+        label: `Goods · USD ${moqTier.unitPriceUsd.toFixed(2)} @ ${rates.fxUsdToNpr.toFixed(2)}`,
+        amountNpr: perUnit(b.goodsNpr),
+      },
+      { label: "Freight to Kathmandu", amountNpr: perUnit(b.freightNpr) },
+      { label: `Customs duty · ${rates.customsDutyPercent}%`, amountNpr: perUnit(b.customsNpr) },
+      { label: `VAT · ${rates.vatPercent}%`, amountNpr: perUnit(b.vatNpr) },
+      { label: `Alihub service · ${rates.marginPercent}%`, amountNpr: perUnit(b.marginNpr) },
+    ],
+    totalNpr: formatNpr(b.unitPriceNpr),
+  };
+
   return {
     id: d.productId,
     slug: d.productId,
@@ -130,5 +164,6 @@ export async function getProduct(id: string): Promise<ProductDetail> {
       unitPriceNpr: formatNpr(moq.unitPriceNpr),
       totalNpr: formatNpr(moq.totalNpr),
     },
+    priceLedger,
   };
 }

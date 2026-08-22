@@ -38,8 +38,8 @@ function OptionGroup({ name, values }: { name: string; values: string[] }) {
   const [selected, setSelected] = useState(values[0]);
   return (
     <div>
-      <p className="mb-2 text-sm text-ink-500">
-        {name}: <span className="font-medium text-ink-800">{selected}</span>
+      <p className="mb-2 text-sm text-neutral-700">
+        {name}: <span className="text-ink">{selected}</span>
       </p>
       <div className="flex flex-wrap gap-2">
         {values.map((value) => (
@@ -48,10 +48,10 @@ function OptionGroup({ name, values }: { name: string; values: string[] }) {
             type="button"
             onClick={() => setSelected(value)}
             className={cn(
-              "rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+              " border px-3 py-1.5 text-sm  transition-colors",
               value === selected
-                ? "border-brand-500 bg-brand-50 text-brand-700 ring-1 ring-brand-500"
-                : "border-ink-200 bg-white text-ink-700 hover:border-ink-300",
+                ? "border-accent bg-accent-100 text-accent-700 "
+                : "border-divider bg-ground text-neutral-800 hover:border-neutral-500",
             )}
           >
             {value}

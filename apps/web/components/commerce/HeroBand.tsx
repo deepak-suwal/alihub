@@ -1,41 +1,38 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { CATEGORY_TILES, POPULAR_SEARCHES } from "@/lib/home-collections";
+import { CATEGORY_TILES } from "@/lib/home-collections";
 import { CATEGORY_ICONS, FALLBACK_CATEGORY_ICON } from "./category-meta";
-import { ShieldIcon, TagIcon, TruckIcon } from "@/components/ui/icons";
+import { buttonClasses } from "@/components/ui/Button";
+import { pricingRates } from "@/lib/pricing";
 
 /**
- * Compact, content-first hero (Alibaba-style): a category quick-nav rail on
- * the left and a promo banner on the right. Search lives in the header, so
- * this stays short and gets the user to categories/products immediately.
+ * Home masthead: a category index rail beside the statement of the whole
+ * proposition — one rupee price, nothing added at the border. Split by 2px
+ * rules rather than cards, per the design.
  */
 export function HeroBand() {
   return (
-    <section className="grid gap-4 lg:grid-cols-[236px_1fr]">
+    <section className="grid border-b-2 border-divider lg:grid-cols-[260px_1fr]">
       <CategoryRail />
-      <PromoBanner />
+      <Statement />
     </section>
   );
 }
 
 function CategoryRail() {
   return (
-    <nav className="hidden overflow-hidden rounded-2xl border border-ink-200 bg-white lg:block">
-      <p className="border-b border-ink-100 px-4 py-2.5 text-sm font-semibold text-ink-900">All categories</p>
-      <ul className="p-1.5">
+    <nav className="hidden border-r-2 border-divider py-5 lg:block" aria-label="All categories">
+      <div className="lbl px-6 pb-3">All categories</div>
+      <ul>
         {CATEGORY_TILES.map((tile) => {
           const Icon = CATEGORY_ICONS[tile.label] ?? FALLBACK_CATEGORY_ICON;
           return (
             <li key={tile.label}>
               <Link
                 href={`/?q=${encodeURIComponent(tile.keyword)}`}
-                className="group flex items-center gap-2.5 rounded-lg px-2.5 py-[0.4rem] text-sm text-ink-700 transition-colors hover:bg-ink-50 hover:text-ink-900"
+                className="flex items-center gap-3 border-t border-divider px-6 py-2.5 text-sm transition-colors hover:text-accent"
               >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink-100/80 text-ink-500 transition-colors group-hover:bg-brand-50 group-hover:text-brand-600">
-                  <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
-                </span>
-                <span className="flex-1 font-medium">{tile.label}</span>
-                <ChevronRight className="h-4 w-4 text-ink-300 transition-transform group-hover:translate-x-0.5" />
+                <Icon className="h-4 w-4 shrink-0 text-neutral-700" strokeWidth={1.75} />
+                <span className="flex-1">{tile.label}</span>
               </Link>
             </li>
           );
@@ -45,53 +42,43 @@ function CategoryRail() {
   );
 }
 
-function PromoBanner() {
+function Statement() {
+  const rates = pricingRates();
   return (
-    <div className="relative flex min-h-[300px] flex-col justify-center overflow-hidden rounded-2xl bg-ink-900 px-7 py-10 text-white sm:px-10 lg:pb-16">
-      {/* One quiet corner glow — enough depth without reading as a template. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: "radial-gradient(70% 90% at 88% -12%, rgba(200,90,52,0.16), transparent 62%)",
-        }}
-      />
-      <div className="relative max-w-lg">
-        <p className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-brand-300">
-          B2B sourcing for Nepal
-        </p>
-        <h1 className="text-3xl font-bold leading-[1.12] tracking-tight sm:text-4xl">
-          Source millions of products, priced in rupees
-        </h1>
-        <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-300">
-          Search Alibaba’s global catalog, see the landed NPR price up front, and buy locally.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm">
-          <span className="mr-1 text-ink-400">Popular:</span>
-          {POPULAR_SEARCHES.slice(0, 4).map((term) => (
-            <Link
-              key={term}
-              href={`/?q=${encodeURIComponent(term)}`}
-              className="rounded-full border border-white/10 px-3 py-1 text-ink-300 transition-colors hover:border-white/25 hover:text-white"
-            >
-              {term}
-            </Link>
-          ))}
-        </div>
+    <div className="flex flex-col justify-center px-6 py-12 lg:px-12">
+      <div className="lbl mb-4 text-accent-700">Landed price, up front</div>
+      <h1 className="mb-4 text-[40px] leading-[1.02] lg:text-[52px]">
+        Source from Alibaba.
+        <br />
+        Pay one rupee price.
+      </h1>
+      <p className="mb-6 max-w-[460px] text-base text-neutral-800">
+        Every price on Alihub already carries freight, customs duty, VAT and clearance. What you see
+        is what lands in your shop — no surprise bill at the border.
+      </p>
+      <div className="mb-8 flex flex-wrap gap-3">
+        <Link href="#catalog" className={buttonClasses("primary", "md")}>
+          Browse the catalog
+        </Link>
+        <Link href="/cart" className={buttonClasses("secondary", "md")}>
+          View sourcing list
+        </Link>
       </div>
 
-      {/* Bottom-anchored trust line fills the banner's height (matches the tall category rail). */}
-      <div className="absolute inset-x-7 bottom-6 hidden items-center gap-6 border-t border-white/10 pt-5 text-xs text-ink-400 sm:inset-x-10 lg:flex">
-        <span className="inline-flex items-center gap-1.5">
-          <ShieldIcon className="h-3.5 w-3.5" /> Verified Alibaba suppliers
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <TagIcon className="h-3.5 w-3.5" /> Live prices, landed in NPR
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <TruckIcon className="h-3.5 w-3.5" /> Delivered to Nepal
-        </span>
-      </div>
+      <dl className="grid grid-cols-3 border-t-2 border-divider">
+        <Stat value="40M+" label="Products priced in NPR" className="pr-4" />
+        <Stat value={`${rates.customsDutyPercent}% + ${rates.vatPercent}%`} label="Duty & VAT, prepaid" className="px-4" />
+        <Stat value={`Rs ${rates.fxUsdToNpr.toFixed(2)}`} label="USD rate applied today" className="pl-4" />
+      </dl>
+    </div>
+  );
+}
+
+function Stat({ value, label, className }: { value: string; label: string; className?: string }) {
+  return (
+    <div className={`pt-4 ${className ?? ""}`}>
+      <dt className="text-[22px] font-extrabold tabular-nums">{value}</dt>
+      <dd className="lbl mt-0.5">{label}</dd>
     </div>
   );
 }

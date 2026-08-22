@@ -6,11 +6,18 @@ import { ProductCard } from "@/components/commerce/ProductCard";
 import { ProductRail } from "@/components/commerce/ProductRail";
 import { CategoryTiles } from "@/components/commerce/CategoryTiles";
 import { Pagination } from "@/components/commerce/Pagination";
-import { buttonClasses } from "@/components/ui/Button";
 import { ProductGridSkeleton } from "@/components/commerce/ProductCardSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { AlertIcon, PackageIcon } from "@/components/ui/icons";
+import {
+  AlertIcon,
+  PackageIcon,
+  PackageSearchIcon,
+  ReceiptIcon,
+  ShieldIcon,
+  TruckIcon,
+} from "@/components/ui/icons";
+import { pricingRates } from "@/lib/pricing";
 import { HOME_RAILS, HOME_REVALIDATE } from "@/lib/home-collections";
 
 export default async function HomePage({
@@ -30,29 +37,99 @@ export default async function HomePage({
   }
 
   return (
-    <div className="space-y-10">
+    <>
       <HeroBand />
       <Suspense fallback={<DiscoverySkeleton />}>
         <Discovery />
       </Suspense>
+      <WhatThePriceContains />
       <CtaBand />
-    </div>
+    </>
   );
 }
+
+/** The proposition, itemised — the home-page echo of the product cost ledger. */
+function WhatThePriceContains() {
+  const rates = pricingRates();
+  return (
+    <section className="border-b-2 border-divider px-6 py-10 lg:px-12">
+      <h2 className="mb-5 text-[28px]">What the NPR price contains</h2>
+      <div className="grid gap-12 lg:grid-cols-2">
+        <table className="table table-flush">
+          <tbody>
+            <tr>
+              <td>Supplier price, converted at USD 1 = NPR {rates.fxUsdToNpr.toFixed(2)}</td>
+              <td className="lbl text-right">Live FX</td>
+            </tr>
+            <tr>
+              <td>Sea freight, consolidation and inland haul</td>
+              <td className="lbl text-right">Per unit</td>
+            </tr>
+            <tr>
+              <td>Customs duty, paid at the border by Alihub</td>
+              <td className="lbl text-right">{rates.customsDutyPercent}%</td>
+            </tr>
+            <tr>
+              <td>Nepal VAT, invoiced to you with the order</td>
+              <td className="lbl text-right">{rates.vatPercent}%</td>
+            </tr>
+            <tr>
+              <td>Sourcing, inspection and clearance service</td>
+              <td className="lbl text-right">{rates.marginPercent}%</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="grid gap-6 sm:grid-cols-2">
+          {TRUST.map((t) => (
+            <div key={t.title} className="flex flex-col gap-2 bg-surface p-5">
+              <t.icon className="h-5 w-5 text-accent" />
+              <div className="text-base font-extrabold">{t.title}</div>
+              <p className="text-[13px] text-neutral-800">{t.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const TRUST = [
+  {
+    icon: ShieldIcon,
+    title: "Verified suppliers only",
+    body: "Every listing comes from an Alibaba supplier we can trace, with trade history behind it.",
+  },
+  {
+    icon: ReceiptIcon,
+    title: "VAT invoice with every order",
+    body: "Duty and VAT itemised against your PAN, ready for filing.",
+  },
+  {
+    icon: TruckIcon,
+    title: "Delivered, not dropped at the border",
+    body: "Freight, clearance and the inland leg to your door are all in the quoted price.",
+  },
+  {
+    icon: PackageSearchIcon,
+    title: "Checked before it ships",
+    body: "We inspect bulk orders at the factory, so faults are caught before they travel.",
+  },
+];
 
 /** Closing prompt — nudges another search for anything not surfaced above. */
 function CtaBand() {
   return (
-    <section className="flex flex-col items-center justify-between gap-5 rounded-2xl border border-ink-200 bg-white px-6 py-7 text-center sm:flex-row sm:px-8 sm:text-left">
+    <section className="flex flex-col items-end justify-between gap-8 bg-accent px-6 py-14 text-ground sm:flex-row lg:px-12">
       <div>
-        <h2 className="text-lg font-bold tracking-tight text-ink-900 sm:text-xl">
-          Can’t find what you’re sourcing?
+        <div className="mb-4 text-[11px] uppercase tracking-[0.1em]">
+          Can’t find it in the catalog?
+        </div>
+        <h2 className="max-w-[760px] text-[34px] leading-[1.05] text-ground lg:text-[44px]">
+          Search 40M+ more products, priced landed in Kathmandu.
         </h2>
-        <p className="mt-1 max-w-lg text-sm text-ink-500">
-          Search millions more products across Alibaba’s global catalog — priced in NPR, delivered to Nepal.
-        </p>
       </div>
-      <Link href="/" className={buttonClasses("primary", "md", "shrink-0")}>
+      <Link href="/" className="btn min-h-[48px] shrink-0 bg-ground px-6 text-ink hover:bg-neutral-200">
         Start a search
       </Link>
     </section>
@@ -65,9 +142,9 @@ async function Discovery() {
   );
 
   return (
-    <div className="space-y-10">
+    <div id="catalog">
       {/* Desktop gets the category rail in the hero; show the grid only on mobile. */}
-      <div className="lg:hidden">
+      <div className="border-b-2 border-divider px-6 py-8 lg:hidden">
         <CategoryTiles />
       </div>
       {rails.map((rail) => (
@@ -102,14 +179,14 @@ async function SearchResults({ query, page }: { query: string; page?: string }) 
   }
 
   return (
-    <section>
-      <div className="mb-4 flex items-baseline justify-between">
-        <h1 className="text-lg font-semibold text-ink-900">
-          Results for <span className="text-brand-700">“{query}”</span>
+    <section className="px-6 py-10 lg:px-12">
+      <div className="mb-6 flex items-baseline justify-between gap-4 border-b-2 border-divider pb-3">
+        <h1 className="text-[28px]">
+          Results for <span className="text-accent">“{query}”</span>
         </h1>
-        <p className="text-sm text-ink-400">{results.total.toLocaleString()} products</p>
+        <p className="lbl">{results.total.toLocaleString()} products</p>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {results.items.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
@@ -143,12 +220,12 @@ async function fetchRailItems(keyword: string): Promise<ProductSearchResult["ite
 
 function DiscoverySkeleton() {
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 px-6 py-10 lg:px-12">
       <div>
         <Skeleton className="mb-4 h-6 w-40" />
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
           {Array.from({ length: 12 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-xl" />
+            <Skeleton key={i} className="h-24" />
           ))}
         </div>
       </div>
@@ -158,7 +235,7 @@ function DiscoverySkeleton() {
           <div className="flex gap-4 overflow-hidden">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="w-40 shrink-0 sm:w-48">
-                <Skeleton className="aspect-square rounded-xl" />
+                <Skeleton className="aspect-square" />
                 <Skeleton className="mt-2 h-4 w-full" />
                 <Skeleton className="mt-1 h-4 w-1/2" />
               </div>
@@ -172,7 +249,7 @@ function DiscoverySkeleton() {
 
 function SearchResultsSkeleton() {
   return (
-    <div>
+    <div className="px-6 py-10 lg:px-12">
       <Skeleton className="mb-4 h-6 w-56" />
       <ProductGridSkeleton count={15} />
     </div>
